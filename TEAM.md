@@ -10,7 +10,7 @@
 
 **Team members:**
 
-* Student 1's Student number - Full Name - Student email 
+* Student 1's Student number - Huynh Dac Tan Dat - S3777091
 * Student 2's Student number - Full Name - Student email 
 * Student 3's Student number - Full Name - Student email 
 

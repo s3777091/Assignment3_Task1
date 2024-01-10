@@ -105,7 +105,7 @@ class QLearningAgent(ReinforcementAgent):
         legalActions = self.getLegalActions(state)
         action = None
         "*** YOUR CODE HERE ***"
-        if not legalActions:  # More Pythonic way to check if list is empty
+        if not legalActions:
             return action
 
         return random.choice(legalActions) if util.flipCoin(self.epsilon) else self.getPolicy(state)
