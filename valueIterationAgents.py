@@ -27,6 +27,7 @@
 
 
 import mdp, util
+import numpy as np
 
 from learningAgents import ValueEstimationAgent
 import collections
@@ -49,21 +50,42 @@ class ValueIterationAgent(ValueEstimationAgent):
           Some useful mdp methods you will use:
               mdp.getStates()
               mdp.getPossibleActions(state)
-              mdp.getTransitionStatesAndProbs(state, action)
-              mdp.getReward(state, action, nextState)
+              mdp.getTransitionStatesAndProbs(state, action)    T(s,a,s')
+              mdp.getReward(state, action, nextState)           R(s,a,s')
               mdp.isTerminal(state)
         """
         self.mdp = mdp
-        self.discount = discount
-        self.iterations = iterations
+        self.discount = discount    # gamma, learning rate
+        self.iterations = iterations    # number of loop
         self.values = util.Counter() # A Counter is a dict with default 0
         self.runValueIteration()
 
     def runValueIteration(self):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
+        for _ in range(self.iterations):
+            old_values = self.values.copy()
+            convergence_threshold = 1e-7
+            d = 0            
+            for s in self.mdp.getStates():
+                if self.mdp.isTerminal(s):      # check convergence condition
+                    self.values[s] = 0
+                else:
+                    q_values = [self.getQValue(s, a) for a in self.mdp.getPossibleActions(s)]   # calculate q_value
+                    
+                    # value of current state is max q_value
+                    self.values[s] = max(q_values)
+                    
+            # check the gap between U and U_prime -> see if it changes or not
+            d = max(abs(self.values[s] - old_values[s]) for s in self.mdp.getStates())
+            
+            # 1e-10 = small positive number, close to 0
+            # this condition is to check if the gap d nearly unchanged
+            if d <= convergence_threshold:       
+                break
+                
 
-
+                
     def getValue(self, state):
         """
           Return the value of the state (computed in __init__).
@@ -77,6 +99,13 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
+        q_value = 0     # initialize the q_value
+        for next_state, prob in self.mdp.getTransitionStatesAndProbs(state, action):        # get Transition base on next_state, prob T(s,a,s')
+            reward = self.mdp.getReward(state, action, next_state)
+        # q-value formula
+        # Q(s, a) = p[R(s,a,s') + discount*V(s')]
+            q_value += prob * (reward + (self.discount * self.values[next_state]))
+        return q_value
         util.raiseNotDefined()
 
     def computeActionFromValues(self, state):
@@ -89,6 +118,14 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
+        # check terminal = goal
+        if self.mdp.isTerminal(state):      # Terminal state -> return None
+            return None
+        
+        actions = self.mdp.getPossibleActions(state)        # get all actions from state
+        
+        best_action = max(actions, key=lambda action: self.computeQValueFromValues(state, action))
+        return best_action
         util.raiseNotDefined()
 
     def getPolicy(self, state):
